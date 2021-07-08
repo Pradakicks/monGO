@@ -275,8 +275,8 @@ func main() {
 	// mongodb+srv://vibris-User:eIDpR4kttFu57FHE@vibris.jyxhh.mongodb.net/VibrisData?retryWrites=true&w=majority
 	router := mux.NewRouter()
 	router.HandleFunc("/api/v1/users", getUsers).Methods("GET")
-	router.HandleFunc("/api/v1/user/{key}", getUser).Methods("GET")
-	router.HandleFunc("/api/v1/user/{key}", addData).Methods("PATCH")
+	router.HandleFunc("/api/v1/users/{key}", getUser).Methods("GET")
+	router.HandleFunc("/api/v1/users/{key}", addData).Methods("PATCH")
 	router.HandleFunc("/api/v1/users", addUserKey).Methods("POST")
 	err := http.ListenAndServe(":4123", router)
 	log.Fatal(err)
