@@ -144,28 +144,34 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 	var params = mux.Vars(r)
 
 	key := params["key"]
-	fmt.Println(key)
-	isPresent, pos := findKeyInGlobal(key)
-	if !isPresent {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("400 - Key Not Found!"))
+	val, ok := r.Header["Apiekdfudks9"]
+
+	if ok && val[0] == "secretVibNoa9o73jd91kd0akd8nf38ald8nfoa8dnalkjsd98fkksd8fnalsdfha9sdfnasdp;fpasdjhfpioashdf9asdhfasdlfasd8fasdofbasdkjf" {
+		fmt.Println(key, "Validated")
+		isPresent, pos := findKeyInGlobal(key)
+		if !isPresent {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("400 - Key Not Found!"))
+		} else {
+			json.NewEncoder(w).Encode(globalKeys[pos])
+		}
+	
+		// var user types.UserKey
+		// we get params with mux.
+	
+		// string to primitive.ObjectID
+	
+		// // We create filter. If it is unnecessary to sort data for you, you can use bson.M{}
+		// filter := bson.M{"key": key}
+		// err := collection.FindOne(context.TODO(), filter).Decode(&user)
+	
+		// 	helper.GetError(err, w)
+		// 	return
+		// }
 	} else {
-		json.NewEncoder(w).Encode(globalKeys[pos])
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte("401 - UnAuthorized!"))
 	}
-
-	// var user types.UserKey
-	// we get params with mux.
-
-	// string to primitive.ObjectID
-
-	// // We create filter. If it is unnecessary to sort data for you, you can use bson.M{}
-	// filter := bson.M{"key": key}
-	// err := collection.FindOne(context.TODO(), filter).Decode(&user)
-
-	// 	helper.GetError(err, w)
-	// 	return
-	// }
-
 }
 
 func addData(w http.ResponseWriter, r *http.Request) {
