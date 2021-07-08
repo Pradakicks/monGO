@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+    web:
+        image: mon-go
+        build: .
+        command: "go run main.go"
+        ports : 
+            - "4123:4123"
+        depends_on:
+            - "mongo"
+    mongo:
+        image: "mongo"
+        ports : 
+            - "27017:27017"
