@@ -129,7 +129,6 @@ func addUserKey(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
-
 func getUser(w http.ResponseWriter, r *http.Request) {
 	// set header.
 	watch := stopwatch.Start()
@@ -205,7 +204,7 @@ func addData(w http.ResponseWriter, r *http.Request) {
 			}
 			log.Fatal(err)
 		}
-		json.NewEncoder(w).Encode(updatedDocument)
+		json.NewEncoder(w).Encode(currentData)
 
 	}
 }
