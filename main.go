@@ -259,7 +259,6 @@ func getGlobalKeys() {
 func main() {
 	fmt.Println("Starting the application..")
 	// current := time.Now()
-
 	go func() {
 		for {
 			go getGlobalKeys()
@@ -269,10 +268,10 @@ func main() {
 
 	// mongodb+srv://vibris-User:eIDpR4kttFu57FHE@vibris.jyxhh.mongodb.net/VibrisData?retryWrites=true&w=majority
 	router := mux.NewRouter()
-	router.HandleFunc("/Users", getUsers).Methods("GET")
-	router.HandleFunc("/User/{key}", getUser).Methods("GET")
-	router.HandleFunc("/User/{key}", addData).Methods("PATCH")
-	router.HandleFunc("/Users", addUserKey).Methods("POST")
+	router.HandleFunc("api/v1/users", getUsers).Methods("GET")
+	router.HandleFunc("api/v1/user/{key}", getUser).Methods("GET")
+	router.HandleFunc("api/v1/user/{key}", addData).Methods("PATCH")
+	router.HandleFunc("api/v1/users", addUserKey).Methods("POST")
 	err := http.ListenAndServe(":4123", router)
 	log.Fatal(err)
 }
