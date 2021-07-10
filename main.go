@@ -54,7 +54,7 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 			// & character returns the memory address of the following variable.
 			err := cur.Decode(&user) // decode similar to deserialize process.
 			if err != nil {
-				log.Fatal(err)
+				fmt.Println(err)
 			}
 
 			// add item our array
@@ -62,7 +62,7 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if err := cur.Err(); err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
 		}
 		globalKeys = users
 		json.NewEncoder(w).Encode(users)
@@ -202,7 +202,7 @@ func addData(w http.ResponseWriter, r *http.Request) {
 			if err == mongo.ErrNoDocuments {
 				return
 			}
-			log.Fatal(err)
+			fmt.Println(err)
 		}
 		json.NewEncoder(w).Encode(updatedDocument)
 
@@ -235,7 +235,7 @@ func getGlobalKeys() {
 	cur, err := collection.Find(context.TODO(), bson.M{})
 
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 		return
 	}
 
@@ -249,14 +249,14 @@ func getGlobalKeys() {
 		// & character returns the memory address of the following variable.
 		err := cur.Decode(&user) // decode similar to deserialize process.
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
 		}
 		// add item our array
 		users = append(users, user)
 	}
 
 	if err := cur.Err(); err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 	globalKeys = users
 }
