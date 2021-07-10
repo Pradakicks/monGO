@@ -9,7 +9,7 @@ type UserKey struct {
 	ID      primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
 	Key     string             `json:"key,omitempty" bson:"key,omitempty"`
 	KeyData primitive.ObjectID `json:"keyData,omitempty" bson:"keyData,omitempty"`
-	Date    int64              `json:"date,omitempty" bson:"date,omitempty"`
+	Date    int64            `json:"date,omitempty" bson:"date,omitempty"`
 }
 
 type UserData struct {

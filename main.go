@@ -75,10 +75,7 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 func addUserKey(w http.ResponseWriter, r *http.Request) {
 	watch := stopwatch.Start()
 
-	defer func() {
-		watch.Stop()
-		fmt.Printf("Request Took : %v\n", watch.Milliseconds())
-	}()
+
 	w.Header().Add("content-type", "application/json")
 	var userkey types.UserKey
 	json.NewDecoder(r.Body).Decode(&userkey)
@@ -102,6 +99,10 @@ func addUserKey(w http.ResponseWriter, r *http.Request) {
 		LoginData: time.Now().UTC().UnixNano(),
 		Data:      datain,
 	}
+	defer func() {
+		watch.Stop()
+		fmt.Printf("Adding User Key : %s Request Took : %v\n", userkey.Key, watch.Milliseconds())
+	}()
 	userkey.KeyData = userdata.ID
 	isPresent, _ := findKeyInGlobal(userkey.Key)
 	if !isPresent {
@@ -176,14 +177,15 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 func addData(w http.ResponseWriter, r *http.Request) {
 	watch := stopwatch.Start()
 
-	defer func() {
-		watch.Stop()
-		fmt.Printf("Request Took : %v\n", watch.Milliseconds())
-	}()
+	
 	w.Header().Add("content-type", "application/json")
 	var params = mux.Vars(r)
 
 	key := params["key"]
+	defer func() {
+		watch.Stop()
+		fmt.Printf("Adding Data to %s: Request Took : %v\n", key, watch.Milliseconds())
+	}()
 	isPresent, _ := findKeyInGlobal(key)
 	if !isPresent {
 		w.WriteHeader(http.StatusBadRequest)
