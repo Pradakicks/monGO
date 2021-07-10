@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log"
 	helper "monGO-vibrisDB/helper"
+	"monGO-vibrisDB/types"
 	"net/http"
 	"time"
-	"monGO-vibrisDB/types"
 
 	"github.com/bradhe/stopwatch"
 	"github.com/gorilla/mux"
@@ -154,16 +154,16 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 		} else {
 			json.NewEncoder(w).Encode(globalKeys[pos])
 		}
-	
+
 		// var user types.UserKey
 		// we get params with mux.
-	
+
 		// string to primitive.ObjectID
-	
+
 		// // We create filter. If it is unnecessary to sort data for you, you can use bson.M{}
 		// filter := bson.M{"key": key}
 		// err := collection.FindOne(context.TODO(), filter).Decode(&user)
-	
+
 		// 	helper.GetError(err, w)
 		// 	return
 		// }
@@ -204,7 +204,7 @@ func addData(w http.ResponseWriter, r *http.Request) {
 			}
 			log.Fatal(err)
 		}
-		json.NewEncoder(w).Encode(currentData)
+		json.NewEncoder(w).Encode(updatedDocument)
 
 	}
 }
@@ -266,8 +266,8 @@ func main() {
 	// current := time.Now()
 	go func() {
 		for {
-			go getGlobalKeys()
-			time.Sleep(1 * time.Second)
+			getGlobalKeys()
+			time.Sleep(250 * time.Millisecond)
 		}
 	}()
 
