@@ -29,7 +29,7 @@ func ConnectDB() *mongo.Collection {
 
 	fmt.Println("Connected to MongoDB!")
 
-	collection := client.Database("testing").Collection("testCollection")
+	collection := client.Database("VibrisData").Collection("Keys")
 	databases, err := client.ListDatabaseNames(context.TODO(), bson.M{})
 	if err != nil {
 		log.Fatal(err)
@@ -52,7 +52,7 @@ func ConnectDBData() *mongo.Collection {
 
 	fmt.Println("Connected to MongoDB Data Collection!")
 
-	collection := client.Database("testing").Collection("data")
+	collection := client.Database("VibrisData").Collection("data")
 
 	return collection
 }
