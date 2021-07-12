@@ -17,9 +17,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
-
-var collection = helper.ConnectDB()
 var dataCollection = helper.ConnectDBData()
+var collection = helper.ConnectDB()
 var globalKeys []types.UserKey
 
 func getUsers(w http.ResponseWriter, r *http.Request) {
