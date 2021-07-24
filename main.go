@@ -18,11 +18,43 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var collection = helper.ConnectDB()
-var dataCollection = helper.ConnectDBData()
-var globalKeys []types.UserKey
+type mongoDatabase interface {
+	getVersion() string
+	connectDB()
+	connectDataDB()
+	getCollection() *mongo.Collection
+	getDataCollection() *mongo.Collection
+}
 
-func getUsers(w http.ResponseWriter, r *http.Request) {
+type APIv2 struct {}
+
+type APIv1 struct {
+	version string
+	collection *mongo.Collection
+	dataCollection *mongo.Collection
+}
+
+func (a *APIv1) getVersion() string {
+	return a.version
+}
+func (v *APIv1) connectDB () {
+	v.collection = helper.ConnectDB()
+}
+
+func (v *APIv1) connectDataDB () {
+	v.dataCollection = helper.ConnectDBData()
+}
+
+func (v *APIv1) getCollection () *mongo.Collection {
+	return v.collection
+}
+
+func (v *APIv1) getDataCollection () *mongo.Collection {
+	return v.dataCollection
+}
+
+func (a *APIv1) getUsers(w http.ResponseWriter, r *http.Request) {
+
 	watch := stopwatch.Start()
 
 	defer func() {
@@ -35,7 +67,7 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 		var users []types.UserKey
 
 		// bson.M{},  we passed empty filter. So we want to get all data.
-		cur, err := collection.Find(context.TODO(), bson.M{})
+		cur, err := a.collection.Find(context.TODO(), bson.M{})
 
 		if err != nil {
 			helper.GetError(err, w)
@@ -64,7 +96,6 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 		if err := cur.Err(); err != nil {
 			fmt.Println(err)
 		}
-		globalKeys = users
 		json.NewEncoder(w).Encode(users)
 	} else {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -72,9 +103,8 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func addUserKey(w http.ResponseWriter, r *http.Request) {
+func (a *APIv1) addUserKey(w http.ResponseWriter, r *http.Request) {
 	watch := stopwatch.Start()
-
 
 	w.Header().Add("content-type", "application/json")
 	var userkey types.UserKey
@@ -104,14 +134,14 @@ func addUserKey(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Adding User Key : %s Request Took : %v\n", userkey.Key, watch.Milliseconds())
 	}()
 	userkey.KeyData = userdata.ID
-	isPresent, _ := findKeyInGlobal(userkey.Key)
+	isPresent, _ := getKeyInPool(userkey.Key, a)
 	if !isPresent {
-		result, err := collection.InsertOne(context.TODO(), userkey)
+		result, err := a.collection.InsertOne(context.TODO(), userkey)
 		if err != nil {
 			helper.GetError(err, w)
 			return
 		}
-		res, err := dataCollection.InsertOne(context.TODO(), userdata)
+		res, err := a.dataCollection.InsertOne(context.TODO(), userdata)
 		if err != nil {
 			helper.GetError(err, w)
 			return
@@ -130,7 +160,7 @@ func addUserKey(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
-func getUser(w http.ResponseWriter, r *http.Request) {
+func (a *APIv1) getUser(w http.ResponseWriter, r *http.Request) {
 	// set header.
 	watch := stopwatch.Start()
 
@@ -148,12 +178,12 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 
 	if ok && val[0] == "secretVibNoa9o73jd91kd0akd8nf38ald8nfoa8dnalkjsd98fkksd8fnalsdfha9sdfnasdp;fpasdjhfpioashdf9asdhfasdlfasd8fasdofbasdkjf" {
 		fmt.Println(key, "Validated")
-		isPresent, pos := findKeyInGlobal(key)
+		isPresent, pos := getKeyInPool(key, a)
 		if !isPresent {
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte("400 - Key Not Found!"))
 		} else {
-			json.NewEncoder(w).Encode(globalKeys[pos])
+			json.NewEncoder(w).Encode(getAllKeys(a)[pos])
 		}
 
 		// var user types.UserKey
@@ -174,7 +204,7 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func addData(w http.ResponseWriter, r *http.Request) {
+func (a *APIv1) addData(w http.ResponseWriter, r *http.Request) {
 	watch := stopwatch.Start()
 
 	
@@ -186,7 +216,7 @@ func addData(w http.ResponseWriter, r *http.Request) {
 		watch.Stop()
 		fmt.Printf("Adding Data to %s: Request Took : %v\n", key, watch.Milliseconds())
 	}()
-	isPresent, _ := findKeyInGlobal(key)
+	isPresent, _ := getKeyInPool(key, a)
 	if !isPresent {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("400 - Key Not Found!"))
@@ -199,7 +229,7 @@ func addData(w http.ResponseWriter, r *http.Request) {
 			"$push": bson.M{"data": currentData},
 		}
 		var updatedDocument bson.M
-		err := dataCollection.FindOneAndUpdate(context.TODO(), filter, update, opts).Decode(&updatedDocument)
+		err := a.dataCollection.FindOneAndUpdate(context.TODO(), filter, update, opts).Decode(&updatedDocument)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				return
@@ -211,19 +241,7 @@ func addData(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func findKeyInGlobal(key string) (bool, int) {
-	var isPresent bool = false
-	var position int = 999999
-	for pos, value := range globalKeys {
-		if key == value.Key {
-			isPresent = true
-			position = pos
-		}
-	}
-	return isPresent, position
-}
-
-func getGlobalKeys() {
+func getAllKeys(api mongoDatabase) []types.UserKey {
 	watch := stopwatch.Start()
 
 	var users []types.UserKey
@@ -234,51 +252,69 @@ func getGlobalKeys() {
 	}()
 
 	// bson.M{},  we passed empty filter. So we want to get all data.
-	cur, err := collection.Find(context.TODO(), bson.M{})
+	cur, err := api.getCollection().Find(context.TODO(), bson.M{})
 
 	if err != nil {
 		fmt.Println(err)
-		return
 	}
 
-	// Close the cursor once finished
-	/*A defer statement defers the execution of a function until the surrounding function returns.
-	simply, run cur.Close() process but after cur.Next() finished.*/
 	defer cur.Close(context.TODO())
 	for cur.Next(context.TODO()) {
-		// create a value into which the single document can be decoded
+
 		var user types.UserKey
-		// & character returns the memory address of the following variable.
+
 		err := cur.Decode(&user) // decode similar to deserialize process.
 		if err != nil {
 			fmt.Println(err)
 		}
-		// add item our array
+
 		users = append(users, user)
 	}
 
 	if err := cur.Err(); err != nil {
 		fmt.Println(err)
 	}
-	globalKeys = users
+
+	return users
+}
+
+func initDB(api mongoDatabase) {
+	fmt.Println("Initializing Version", api.getVersion())
+	go api.connectDB()
+	go api.connectDataDB()
+}
+
+func getKeyInPool(key string, api mongoDatabase) (bool, int) {
+	var isPresent bool = false
+	var position int = 999999
+	for pos, value := range getAllKeys(api) {
+		if key == value.Key {
+			isPresent = true
+			position = pos
+		}
+	}
+	return isPresent, position
 }
 
 func main() {
-	fmt.Println("Starting the application..")
-	// current := time.Now()
-	go func() {
-		for {
-			getGlobalKeys()
-			time.Sleep(250 * time.Millisecond)
-		}
-	}()
+	fmt.Println("Starting the application...")
+
+	var v1 APIv1 = APIv1{
+		version: "v1",
+	}
+
+	initDB(&v1)
 
 	// mongodb+srv://vibris-User:eIDpR4kttFu57FHE@vibris.jyxhh.mongodb.net/VibrisData?retryWrites=true&w=majority
+
 	router := mux.NewRouter()
-	router.HandleFunc("/api/v1/users", getUsers).Methods("GET")
-	router.HandleFunc("/api/v1/users/{key}", getUser).Methods("GET")
-	router.HandleFunc("/api/v1/users/{key}", addData).Methods("PATCH")
-	router.HandleFunc("/api/v1/users", addUserKey).Methods("POST")
+
+	router.HandleFunc("/api/v1/users", v1.getUsers).Methods("GET")
+	router.HandleFunc("/api/v1/users/{key}", v1.getUser).Methods("GET")
+	router.HandleFunc("/api/v1/users/{key}", v1.addData).Methods("PATCH")
+	router.HandleFunc("/api/v1/users", v1.addUserKey).Methods("POST")
+
+
 	err := http.ListenAndServe(":4123", router)
 	log.Fatal(err)
 }
