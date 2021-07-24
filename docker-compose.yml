@@ -11,4 +11,6 @@ services:
     mongo:
         image: "mongo"
         ports : 
-            - "27017:9358"
+            - "9358:27017"
+        command: [--auth]
+         

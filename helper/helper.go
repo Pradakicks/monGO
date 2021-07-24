@@ -17,7 +17,7 @@ import (
 func ConnectDB() *mongo.Collection {
 
 	// Set client options
-	clientOptions := options.Client().ApplyURI("mongodb://mongo:9358/VibrisData?compressors=disabled&gssapiServiceName=mongodb")
+	clientOptions := options.Client().ApplyURI("mongodb://vRWVibris:AKewYrH6O9Yc2XWLKnXb2e9Tss34gMwnnWX1EX8AFJ23ALS212g3aXFG2gJASDDLKFJAHJASDDALSKJDASUDQWKJ@mongo:27017/VibrisData?compressors=disabled&gssapiServiceName=mongodb")
 	// clientOptions := options.Client().ApplyURI("mongodb+srv://vibris-User:eIDpR4kttFu57FHE@vibris.jyxhh.mongodb.net/testing?retryWrites=true&w=majority")
 
 	// Connect to MongoDB
@@ -41,7 +41,7 @@ func ConnectDBData() *mongo.Collection {
 
 	// Set client options
 	// clientOptions := options.Client().ApplyURI("mongodb+srv://vibris-User:eIDpR4kttFu57FHE@vibris.jyxhh.mongodb.net/testing?retryWrites=true&w=majority")
-	clientOptions := options.Client().ApplyURI("mongodb://mongo:9358/VibrisData?compressors=disabled&gssapiServiceName=mongodb")
+	clientOptions := options.Client().ApplyURI("mongodb://vRWVibris:AKewYrH6O9Yc2XWLKnXb2e9Tss34gMwnnWX1EX8AFJ23ALS212g3aXFG2gJASDDLKFJAHJASDDALSKJDASUDQWKJ@mongo:27017/VibrisData?compressors=disabled&gssapiServiceName=mongodb")
 
 	// Connect to MongoDB
 	client, err := mongo.Connect(context.TODO(), clientOptions)
