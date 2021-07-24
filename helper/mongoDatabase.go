@@ -50,7 +50,7 @@ func GetAllKeys(api Interfaces.MongoDatabase) []types.UserKey {
 func InitDB(api Interfaces.MongoDatabase) {
 	fmt.Println("Initializing Version", api.GetVersion())
 	go api.ConnectDB()
-	go api.ConnectDataDB()
+	api.ConnectDataDB()
 }
 
 func GetKeyInPool(key string, api Interfaces.MongoDatabase) (bool, int) {

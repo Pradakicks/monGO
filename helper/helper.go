@@ -57,6 +57,48 @@ func ConnectDBData() *mongo.Collection {
 	return collection
 }
 
+func ConnectDBV2() *mongo.Collection {
+
+	// Set client options
+	clientOptions := options.Client().ApplyURI("mongodb://vRWVibris:AKewYrH6O9Yc2XWLKnXb2e9Tss34gMwnnWX1EX8AFJ23ALS212g3aXFG2gJASDDLKFJAHJASDDALSKJDASUDQWKJ@mongo:27017/VibrisData?compressors=disabled&gssapiServiceName=mongodb")
+	// clientOptions := options.Client().ApplyURI("mongodb+srv://vibris-User:eIDpR4kttFu57FHE@vibris.jyxhh.mongodb.net/testing?retryWrites=true&w=majority")
+
+	// Connect to MongoDB
+	client, err := mongo.Connect(context.TODO(), clientOptions)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Connected to MongoDB!")
+
+	collection := client.Database("VibrisData").Collection("KeysV2")
+	databases, err := client.ListDatabaseNames(context.TODO(), bson.M{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(databases)
+	return collection
+}
+func ConnectDBDataV2() *mongo.Collection {
+
+	// Set client options
+	// clientOptions := options.Client().ApplyURI("mongodb+srv://vibris-User:eIDpR4kttFu57FHE@vibris.jyxhh.mongodb.net/testing?retryWrites=true&w=majority")
+	clientOptions := options.Client().ApplyURI("mongodb://vRWVibris:AKewYrH6O9Yc2XWLKnXb2e9Tss34gMwnnWX1EX8AFJ23ALS212g3aXFG2gJASDDLKFJAHJASDDALSKJDASUDQWKJ@mongo:27017/VibrisData?compressors=disabled&gssapiServiceName=mongodb")
+
+	// Connect to MongoDB
+	client, err := mongo.Connect(context.TODO(), clientOptions)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Connected to MongoDB Data Collection!")
+
+	collection := client.Database("VibrisData").Collection("dataV2")
+
+	return collection
+}
 // ErrorResponse : This is error model.
 type ErrorResponse struct {
 	StatusCode   int    `json:"status"`
